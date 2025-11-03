@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String                   @id @default(uuid())
+  name                   String
+  email                  String                   @unique
+  passwordHash           String
+  role                   String
+  companyRole            String                   @default("")
+  avatarUrl              String                   @default("")
+  timezone               String                   @default("UTC")
+  permissions            Json?
+  profilesAssigned       UserProfileAssignment[]
+  profileOwnerships      ProfileOwner[]
+  resumesCreated         Resume[]                 @relation("ResumeCreatedBy")
+  applicationsBid        Application[]            @relation("ApplicationBidder")
+  applicationsChecked    Application[]            @relation("ApplicationCheckedBy")
+  interviewsCaller       Interview[]              @relation("InterviewCaller")
+  interviewsSupporter    Interview[]              @relation("InterviewSupporter")
+  emailLogsChecked       EmailLog[]               @relation("EmailLogChecker")
+  notifications          Notification[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+}
+
+model Profile {
+  id               String                   @id @default(uuid())
+  alias            String
+  firstName        String
+  lastName         String
+  contact          Json?
+  tags             String[]                 @default([])
+  summary          String                   @default("")
+  links            String[]                 @default([])
+  active           Boolean                  @default(true)
+  owners           ProfileOwner[]
+  assignedUsers    UserProfileAssignment[]
+  resumes          Resume[]
+  applications     Application[]
+  meetings         Meeting[]
+  emailLogs        EmailLog[]
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @updatedAt
+}
+
+model ProfileOwner {
+  id        Int     @id @default(autoincrement())
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([profileId, userId])
+}
+
+model UserProfileAssignment {
+  id        Int     @id @default(autoincrement())
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId String
+
+  @@unique([userId, profileId])
+}
+
+model Resume {
+  id                 String        @id @default(uuid())
+  profile            Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId          String
+  title              String        @default("")
+  stack              String        @default("")
+  note               String        @default("")
+  storage            String        @default("")
+  docxStorage        String        @default("")
+  storageOriginalName String       @default("")
+  storageMimeType    String        @default("")
+  version            String        @default("v1")
+  createdByUser      User?         @relation("ResumeCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdById        String?
+  content            Json?
+  applications       Application[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model Application {
+  id           String      @id @default(uuid())
+  company      String
+  roleTitle    String
+  jobUrl       String      @default("")
+  status       String
+  steps        Json?
+  resume       Resume?     @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  resumeId     String?
+  profile      Profile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId    String
+  bidder       User?       @relation("ApplicationBidder", fields: [bidderId], references: [id], onDelete: SetNull)
+  bidderId     String?
+  checkStatus  String
+  checkedBy    User?       @relation("ApplicationCheckedBy", fields: [checkedById], references: [id], onDelete: SetNull)
+  checkedById  String?
+  checkedAt    DateTime?
+  notes        String      @default("")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  interviews   Interview[]
+  meetings     Meeting[]
+
+  @@index([profileId])
+  @@index([bidderId])
+}
+
+model Interview {
+  id            String      @id @default(uuid())
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  stepName      String
+  scheduledAt   DateTime
+  timezone      String      @default("UTC")
+  meetingLink   String      @default("")
+  participants  Json?
+  caller        User?       @relation("InterviewCaller", fields: [callerId], references: [id], onDelete: SetNull)
+  callerId      String?
+  supporter     User?       @relation("InterviewSupporter", fields: [supporterId], references: [id], onDelete: SetNull)
+  supporterId   String?
+  outcome       String      @default("pending")
+  notes         String      @default("")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Meeting {
+  id            String       @id @default(uuid())
+  title         String       @default("")
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId String?
+  profile       Profile?     @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  profileId     String?
+  scheduledAt   DateTime
+  timezone      String       @default("UTC")
+  attendees     Json?
+  reminders     Json?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model EmailLog {
+  id         String   @id @default(uuid())
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId  String
+  checker    User?    @relation("EmailLogChecker", fields: [checkerId], references: [id], onDelete: SetNull)
+  checkerId  String?
+  threadId   String   @default("")
+  subject    String   @default("")
+  action     String
+  at         DateTime @default(now())
+  notes      String   @default("")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    String?
+  type      String   @default("")
+  payload   Json?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
