@@ -27,7 +27,18 @@ const pass = await bcrypt.hash('password123', 10);
 
 const includeResumeRelations = {
   createdByUser: { select: { id: true, name: true, email: true } },
-  profile: { select: { id: true, firstName: true, lastName: true, alias: true, contact: true } }
+  profile: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      alias: true,
+      email: true,
+      status: true,
+      linkedinUrl: true,
+      linkedinStatus: true
+    }
+  }
 };
 
 const admin = await prisma.user.create({
@@ -96,19 +107,10 @@ const profileSeed = [
     alias: 'eagle',
     firstName: 'Christopher',
     lastName: 'Harper',
-    contact: {
-      email: 'christopher@mail.com',
-      phone: '+1 (555) 238-9943',
-      addressLine1: '1010 Market Street',
-      city: 'San Francisco',
-      state: 'CA',
-      postalCode: '94103',
-      country: 'USA'
-    },
-    summary:
-      'Seasoned DevOps engineer specialized in automating cloud infrastructure and optimizing CI/CD workflows.',
-    tags: ['devops', 'aws', 'terraform'],
-    links: ['https://linkedin.com/in/christopher-harper'],
+    email: 'christopher@mail.com',
+    status: 'ACTIVE',
+    linkedinUrl: 'https://linkedin.com/in/christopher-harper',
+    linkedinStatus: 'LIVE_GOOD',
     owners: [admin.id]
   },
   {
@@ -116,19 +118,10 @@ const profileSeed = [
     alias: 'sparrow',
     firstName: 'Emily',
     lastName: 'Stone',
-    contact: {
-      email: 'emily@mail.com',
-      phone: '+1 (555) 493-8871',
-      addressLine1: '55 W 26th Street',
-      city: 'New York',
-      state: 'NY',
-      postalCode: '10010',
-      country: 'USA'
-    },
-    summary:
-      'Frontend engineer focused on accessible UI systems with React, TypeScript, and design systems.',
-    tags: ['frontend', 'react', 'typescript'],
-    links: ['https://github.com/emily-stone'],
+    email: 'emily@mail.com',
+    status: 'PRESTART',
+    linkedinUrl: 'https://linkedin.com/in/emily-stone-ops',
+    linkedinStatus: 'LIVE_STABLE',
     owners: [admin.id]
   },
   {
@@ -136,18 +129,10 @@ const profileSeed = [
     alias: 'falcon',
     firstName: 'Jordan',
     lastName: 'Briggs',
-    contact: {
-      email: 'jordan@mail.com',
-      phone: '+44 20 7946 0271',
-      addressLine1: '221B Baker Street',
-      city: 'London',
-      postalCode: 'NW1 6XE',
-      country: 'UK'
-    },
-    summary:
-      'Fullstack engineer building resilient systems with TypeScript, Node.js, and cloud-native tooling.',
-    tags: ['fullstack', 'nodejs', 'react'],
-    links: ['https://jordanbriggs.dev'],
+    email: 'jordan@mail.com',
+    status: 'DISABLED',
+    linkedinUrl: null,
+    linkedinStatus: 'RESTRICTED',
     owners: [admin.id]
   }
 ];
@@ -159,10 +144,10 @@ for (const item of profileSeed) {
       alias: item.alias,
       firstName: item.firstName,
       lastName: item.lastName,
-      contact: item.contact,
-      tags: item.tags,
-      summary: item.summary,
-      links: item.links,
+      email: item.email,
+      status: item.status,
+      linkedinUrl: item.linkedinUrl,
+      linkedinStatus: item.linkedinStatus,
       owners: {
         create: item.owners.map(ownerId => ({
           user: { connect: { id: ownerId } }

@@ -9,6 +9,24 @@ const profileAccessFor = req => {
   return req.user?.permissions?.profiles || PROFILE_ACCESS.VIEW;
 };
 
+const PROFILE_STATUS_VALUES = ['ACTIVE', 'PRESTART', 'DISABLED'];
+const LINKEDIN_STATUS_VALUES = ['RESTRICTED', 'LIVE_STABLE', 'LIVE_GOOD', 'LIVE_EARLY', 'APPEALING'];
+
+const normalizeStatusInput = (value, allowed, fallback) => {
+  if (!value) return fallback;
+  const normalized = value
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace(/[\s()-]+/g, '_');
+  if (allowed.includes(normalized)) {
+    return normalized;
+  }
+  return fallback;
+};
+
+const formatStatusOutput = value => value?.toString().trim().toLowerCase().replace(/[\s()-]+/g, '_');
+
 const buildSearchFilter = q => {
   if (!q) return undefined;
   return {
@@ -16,15 +34,7 @@ const buildSearchFilter = q => {
       { alias: { contains: q, mode: 'insensitive' } },
       { firstName: { contains: q, mode: 'insensitive' } },
       { lastName: { contains: q, mode: 'insensitive' } },
-      { tags: { has: q } },
-      { tags: { has: q.toLowerCase() } },
-      {
-        contact: {
-          path: ['email'],
-          string_contains: q,
-          mode: 'insensitive'
-        }
-      }
+      { email: { contains: q, mode: 'insensitive' } }
     ]
   };
 };
@@ -34,22 +44,21 @@ const mapProfile = profile => {
   const owners =
     profile.owners?.map(owner => {
       if (!owner?.user) return null;
-      return {
-        id: owner.user.id,
-        name: owner.user.name,
-        email: owner.user.email
-      };
-    }).filter(Boolean) || [];
+    return {
+      id: owner.user.id,
+      name: owner.user.name,
+      email: owner.user.email
+    };
+  }).filter(Boolean) || [];
   return {
     id: profile.id,
     alias: profile.alias,
     firstName: profile.firstName,
     lastName: profile.lastName,
-    contact: profile.contact || {},
-    tags: profile.tags || [],
-    summary: profile.summary || '',
-    links: profile.links || [],
-    active: typeof profile.active === 'boolean' ? profile.active : true,
+    email: profile.email || '',
+    status: formatStatusOutput(profile.status) || 'active',
+    linkedinUrl: profile.linkedinUrl || '',
+    linkedinStatus: formatStatusOutput(profile.linkedinStatus) || 'restricted',
     owners,
     createdAt: profile.createdAt,
     updatedAt: profile.updatedAt,
@@ -98,13 +107,12 @@ export const list = async (req, res) => {
       alias: true,
       firstName: true,
       lastName: true,
-      contact: true,
-      tags: true,
-      summary: true,
-      links: true,
+      email: true,
+      status: true,
+      linkedinUrl: true,
+      linkedinStatus: true,
       updatedAt: true,
-      createdAt: true,
-      active: true
+      createdAt: true
     }
   });
   res.json(
@@ -124,16 +132,23 @@ export const create = async (req, res) => {
   }
   const { owners = [], ...rest } = req.body || {};
   const ownerIds = Array.isArray(owners) ? owners.filter(id => isValidId(id)) : [];
+  const email = (rest.email || '').toString().trim();
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
   const profile = await prisma.profile.create({
     data: {
       alias: rest.alias,
       firstName: rest.firstName,
       lastName: rest.lastName,
-      summary: rest.summary || '',
-      active: typeof rest.active === 'boolean' ? rest.active : true,
-      contact: rest.contact || {},
-      tags: Array.isArray(rest.tags) ? rest.tags : [],
-      links: Array.isArray(rest.links) ? rest.links : []
+      email,
+      status: normalizeStatusInput(rest.status, PROFILE_STATUS_VALUES, PROFILE_STATUS_VALUES[0]),
+      linkedinUrl: (rest.linkedinUrl || '').toString().trim() || null,
+      linkedinStatus: normalizeStatusInput(
+        rest.linkedinStatus,
+        LINKEDIN_STATUS_VALUES,
+        LINKEDIN_STATUS_VALUES[0]
+      )
     }
   });
   if (ownerIds.length) {
@@ -163,35 +178,51 @@ export const update = async (req, res) => {
     return res.status(403).json({ error: 'Profile editing not permitted' });
   }
 
-  const allowedFields = [
-    'alias',
-    'firstName',
-    'lastName',
-    'summary',
-    'tags',
-    'links',
-    'contact',
-    'active'
-  ];
-  const update = {};
-  for (const key of allowedFields) {
-    if (Object.prototype.hasOwnProperty.call(req.body, key)) {
-      update[key] = req.body[key];
-    }
-  }
-
-  if (update.tags && !Array.isArray(update.tags)) {
-    update.tags = [];
-  }
-  if (update.links && !Array.isArray(update.links)) {
-    update.links = [];
-  }
-
   const dataToUpdate = {};
-  for (const key of allowedFields) {
-    if (Object.prototype.hasOwnProperty.call(update, key)) {
-      dataToUpdate[key] = update[key];
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'alias')) {
+    dataToUpdate.alias = req.body.alias;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'firstName')) {
+    dataToUpdate.firstName = req.body.firstName;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'lastName')) {
+    dataToUpdate.lastName = req.body.lastName;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'email')) {
+    const email = (req.body.email || '').toString().trim();
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
     }
+    dataToUpdate.email = email;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'status')) {
+    const nextStatus = normalizeStatusInput(req.body.status, PROFILE_STATUS_VALUES, null);
+    if (!nextStatus) {
+      return res.status(400).json({ error: 'Invalid profile status' });
+    }
+    dataToUpdate.status = nextStatus;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'linkedinStatus')) {
+    const nextLinkedinStatus = normalizeStatusInput(
+      req.body.linkedinStatus,
+      LINKEDIN_STATUS_VALUES,
+      null
+    );
+    if (!nextLinkedinStatus) {
+      return res.status(400).json({ error: 'Invalid LinkedIn status' });
+    }
+    dataToUpdate.linkedinStatus = nextLinkedinStatus;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body, 'linkedinUrl')) {
+    const url = (req.body.linkedinUrl || '').toString().trim();
+    dataToUpdate.linkedinUrl = url || null;
   }
 
   try {

@@ -27,11 +27,18 @@ const writeParagraph = (doc, text) => {
 
 const writeList = (doc, items) => {
   items.forEach(item => {
-    doc.fillColor('#1F2937').fontSize(11).text(`• ${item}`);
+    doc.fillColor('#1F2937').fontSize(11).text(`- ${item}`);
     doc.moveDown(0.2);
   });
   doc.moveDown(0.4);
 };
+
+const humanizeStatus = value => {
+  if (!value) return '';
+  const textValue = value.toString().toLowerCase().replace(/_/g, ' ');
+  return textValue.replace(/\b\w/g, char => char.toUpperCase());
+};
+
 
 export const generateResumePdf = async (resume, profile) => {
   await ensureResumeDir();
@@ -46,7 +53,6 @@ export const generateResumePdf = async (resume, profile) => {
     doc.pipe(stream);
 
     const content = resume.content || {};
-    const contact = profile.contact || {};
 
     const title = content.headline || `${profile.firstName || ''} ${profile.lastName || ''}`.trim();
 
@@ -56,11 +62,10 @@ export const generateResumePdf = async (resume, profile) => {
 
     const contactLines = [
       profile.fullName,
-      contact.email,
-      contact.secondaryEmail,
-      contact.phone,
-      [contact.addressLine1, contact.addressLine2].filter(Boolean).join(', '),
-      [contact.city, contact.state, contact.postalCode, contact.country].filter(Boolean).join(', ')
+      profile.email,
+      profile.status ? `Profile status: ${humanizeStatus(profile.status)}` : null,
+      profile.linkedinUrl ? `LinkedIn: ${profile.linkedinUrl}` : null,
+      profile.linkedinStatus ? `LinkedIn status: ${humanizeStatus(profile.linkedinStatus)}` : null,
     ].filter(Boolean);
 
     contactLines.forEach(line => {

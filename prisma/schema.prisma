@@ -35,11 +35,10 @@ model Profile {
   alias            String
   firstName        String
   lastName         String
-  contact          Json?
-  tags             String[]                 @default([])
-  summary          String                   @default("")
-  links            String[]                 @default([])
-  active           Boolean                  @default(true)
+  email            String
+  status           ProfileStatus            @default(ACTIVE)
+  linkedinUrl      String?
+  linkedinStatus   LinkedinStatus           @default(RESTRICTED)
   owners           ProfileOwner[]
   assignedUsers    UserProfileAssignment[]
   resumes          Resume[]
@@ -175,4 +174,18 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@map("Notification")
+}
+
+enum ProfileStatus {
+  ACTIVE
+  PRESTART
+  DISABLED
+}
+
+enum LinkedinStatus {
+  RESTRICTED
+  LIVE_STABLE
+  LIVE_GOOD
+  LIVE_EARLY
+  APPEALING
 }

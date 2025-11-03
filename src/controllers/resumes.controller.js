@@ -91,7 +91,16 @@ const includeResumeRelations = {
     select: { id: true, name: true, email: true }
   },
   profile: {
-    select: { id: true, alias: true, firstName: true, lastName: true, contact: true }
+    select: {
+      id: true,
+      alias: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      status: true,
+      linkedinUrl: true,
+      linkedinStatus: true
+    }
   }
 };
 
@@ -151,7 +160,16 @@ const regenerateDocuments = async resumeId => {
     where: { id: resumeId },
     include: {
       profile: {
-        select: { id: true, alias: true, firstName: true, lastName: true, contact: true }
+        select: {
+          id: true,
+          alias: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          status: true,
+          linkedinUrl: true,
+          linkedinStatus: true
+        }
       }
     }
   });

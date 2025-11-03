@@ -35,6 +35,12 @@ const bodyParagraph = text =>
     spacing: { after: 150 }
   });
 
+const humanizeStatus = value => {
+  if (!value) return '';
+  const textValue = value.toString().toLowerCase().replace(/_/g, ' ');
+  return textValue.replace(/\b\w/g, char => char.toUpperCase());
+};
+
 export const generateResumeDocx = async (resume, profile) => {
   await ensureResumeDir();
 
@@ -42,7 +48,6 @@ export const generateResumeDocx = async (resume, profile) => {
   const filePath = path.join(RESUME_DIR, fileName);
 
   const content = resume.content || {};
-  const contact = profile.contact || {};
 
   const documentBody = [];
 
@@ -59,11 +64,10 @@ export const generateResumeDocx = async (resume, profile) => {
 
   const contactLines = [
     profile.fullName,
-    contact.email,
-    contact.secondaryEmail,
-    contact.phone,
-    [contact.addressLine1, contact.addressLine2].filter(Boolean).join(', '),
-    [contact.city, contact.state, contact.postalCode, contact.country].filter(Boolean).join(', ')
+    profile.email,
+    profile.status ? `Profile status: ${humanizeStatus(profile.status)}` : null,
+    profile.linkedinUrl ? `LinkedIn: ${profile.linkedinUrl}` : null,
+    profile.linkedinStatus ? `LinkedIn status: ${humanizeStatus(profile.linkedinStatus)}` : null
   ].filter(Boolean);
 
   if (contactLines.length) {
