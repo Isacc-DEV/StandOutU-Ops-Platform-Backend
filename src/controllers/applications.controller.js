@@ -565,7 +565,7 @@ export const update = async (req, res) => {
         return res.status(400).json({ error: 'Invalid check result' });
       }
       const nextNote = (req.body.checkNote ?? '').toString().trim();
-      if (!nextNote) {
+      if (nextResult !== APPLICATION_CHECK_RESULT.OK && !nextNote) {
         return res.status(400).json({ error: 'Check note is required when completing a review' });
       }
       checkUpdates.checkStatus = APPLICATION_CHECK_STATUS.REVIEWED;
