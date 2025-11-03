@@ -1,0 +1,92 @@
+# --- Dependencies ---
+node_modules/
+.pnpm-store/
+.bun/
+.pnp/
+.pnp.cjs
+# (Keep your lockfile! package-lock.json / yarn.lock / pnpm-lock.yaml should be committed)
+
+# --- Logs & diagnostics ---
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.pid
+*.pid.lock
+
+# --- Runtime & temp ---
+.tmp/
+.temp/
+tmp/
+temp/
+.cache/
+.vscode/.tsbuildinfo
+
+# --- Build outputs ---
+dist/
+build/
+coverage/
+.nyc_output/
+lib-cov/
+
+# --- Testing caches ---
+.jest/
+.eslintcache
+.tap/
+.mocha/
+
+# --- Env & secrets (commit only templates) ---
+.env
+.env.*
+!.env.example
+*.local
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- PM2 ---
+.pm2/pids
+.pm2/logs
+.pm2/dump.pm2
+
+# --- Databases & storage (local/dev only) ---
+data/
+storage/
+uploads/
+public/uploads/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# --- Framework/hosting artifacts (if present) ---
+.serverless/
+.vercel/
+.firebase/
+.next/         # if the repo mixes Next.js
+out/
+
+# --- Docker (keep base files; ignore local overrides) ---
+docker-compose.override.yml
+
+# --- Editor & OS files ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+.history/
+
+# --- Certificates/keys kept out of git ---
+*.pem
+*.key
+*.crt
+*.pfx

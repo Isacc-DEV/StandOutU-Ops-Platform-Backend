@@ -95,7 +95,6 @@ model Application {
   company      String
   roleTitle    String
   jobUrl       String      @default("")
-  status       String
   steps        Json?
   resume       Resume?     @relation(fields: [resumeId], references: [id], onDelete: SetNull)
   resumeId     String?
@@ -107,7 +106,9 @@ model Application {
   checkedBy    User?       @relation("ApplicationCheckedBy", fields: [checkedById], references: [id], onDelete: SetNull)
   checkedById  String?
   checkedAt    DateTime?
-  notes        String      @default("")
+  bidderNote   String      @default("")
+  checkNote    String      @default("")
+  checkResult  String      @default("pending")
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   interviews   Interview[]
@@ -173,4 +174,5 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@map("Notification")
 }

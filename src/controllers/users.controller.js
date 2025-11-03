@@ -55,8 +55,8 @@ const buildPermissionPayload = (current, incoming) => {
     applications: {
       manageAll: merged.applications.manageAll,
       checkAll: merged.applications.checkAll,
-      manageProfiles: toIdArray(merged.applications.manageProfiles),
-      checkProfiles: toIdArray(merged.applications.checkProfiles)
+      manageApplications: toIdArray(merged.applications.manageApplications),
+      checkApplications: toIdArray(merged.applications.checkApplications)
     }
   };
 };

@@ -41,8 +41,9 @@ for (const user of users) {
     profiles: rawPermissions.profiles || PROFILE_ACCESS.VIEW,
     applications: {
       manageAll: normalizedApps.manageAll,
-      manageProfiles: toUniqueStrings(normalizedApps.manageProfiles),
-      checkProfiles: toUniqueStrings(normalizedApps.checkProfiles)
+      checkAll: normalizedApps.checkAll,
+      manageApplications: toUniqueStrings(normalizedApps.manageApplications),
+      checkApplications: toUniqueStrings(normalizedApps.checkApplications)
     }
   };
 

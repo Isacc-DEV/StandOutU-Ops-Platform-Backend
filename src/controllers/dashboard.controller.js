@@ -32,12 +32,12 @@ export const getStats = async (req, res) => {
     where: { scheduledAt: { gte: new Date() } }
   });
 
-  const pipelineGroup = await prisma.application.groupBy({
-    by: ['status'],
+  const checkStatusGroup = await prisma.application.groupBy({
+    by: ['checkStatus'],
     _count: { _all: true }
   });
-  const pipelineCounts = pipelineGroup.map(item => ({
-    _id: item.status,
+  const checkStatusCounts = checkStatusGroup.map(item => ({
+    _id: item.checkStatus,
     count: item._count._all
   }));
 
@@ -58,5 +58,11 @@ export const getStats = async (req, res) => {
     count
   }));
 
-  res.json({ totalApps, appsByBidder, interviewsUpcoming, pipelineCounts, stepAgg });
+  res.json({
+    totalApps,
+    appsByBidder,
+    interviewsUpcoming,
+    checkStatusCounts,
+    stepAgg
+  });
 };

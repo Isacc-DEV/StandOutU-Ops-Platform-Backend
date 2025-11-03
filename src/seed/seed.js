@@ -1,7 +1,12 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { connectDB, disconnectDB, prisma } from '../config/db.js';
-import { PROFILE_ACCESS, ROLES, APPLICATION_CHECK_STATUS } from '../config/auth.js';
+import {
+  PROFILE_ACCESS,
+  ROLES,
+  APPLICATION_CHECK_RESULT,
+  APPLICATION_CHECK_STATUS
+} from '../config/auth.js';
 import { generateResumePdf } from '../services/resumePdf.js';
 import { generateResumeDocx } from '../services/resumeDocx.js';
 
@@ -34,12 +39,12 @@ const admin = await prisma.user.create({
     companyRole: 'Operations Manager',
     avatarUrl: 'https://i.pravatar.cc/120?img=32',
     permissions: {
-      applications: {
-        manageAll: true,
-        checkAll: false,
-        manageProfiles: [],
-        checkProfiles: []
-      },
+        applications: {
+          manageAll: true,
+          checkAll: false,
+          manageApplications: [],
+          checkApplications: []
+        },
       profiles: PROFILE_ACCESS.EDIT
     }
   }
@@ -54,12 +59,12 @@ const bidderKash = await prisma.user.create({
     companyRole: 'Senior Bidder',
     avatarUrl: 'https://i.pravatar.cc/120?img=12',
     permissions: {
-      applications: {
-        manageAll: false,
-        checkAll: false,
-        manageProfiles: [],
-        checkProfiles: []
-      },
+        applications: {
+          manageAll: false,
+          checkAll: false,
+          manageApplications: [],
+          checkApplications: []
+        },
       profiles: PROFILE_ACCESS.VIEW
     }
   }
@@ -74,12 +79,12 @@ const bidderSam = await prisma.user.create({
     companyRole: 'Bidder',
     avatarUrl: 'https://i.pravatar.cc/120?img=18',
     permissions: {
-      applications: {
-        manageAll: false,
-        checkAll: false,
-        manageProfiles: [],
-        checkProfiles: []
-      },
+        applications: {
+          manageAll: false,
+          checkAll: false,
+          manageApplications: [],
+          checkApplications: []
+        },
       profiles: PROFILE_ACCESS.VIEW
     }
   }
@@ -175,8 +180,8 @@ await prisma.user.update({
       applications: {
         manageAll: false,
         checkAll: false,
-        manageProfiles: [profileDocs.eagle.id],
-        checkProfiles: [profileDocs.eagle.id]
+        manageApplications: [profileDocs.eagle.id],
+        checkApplications: [profileDocs.eagle.id]
       },
       profiles: PROFILE_ACCESS.VIEW
     }
@@ -190,8 +195,8 @@ await prisma.user.update({
       applications: {
         manageAll: false,
         checkAll: false,
-        manageProfiles: [profileDocs.sparrow.id, profileDocs.falcon.id],
-        checkProfiles: [profileDocs.sparrow.id]
+        manageApplications: [profileDocs.sparrow.id, profileDocs.falcon.id],
+        checkApplications: [profileDocs.sparrow.id]
       },
       profiles: PROFILE_ACCESS.VIEW
     }
@@ -356,53 +361,53 @@ await prisma.application.createMany({
       company: 'Planhat',
       roleTitle: 'Site Reliability Engineer',
       jobUrl: 'https://plnh.at/jobs/site-reliability-engineer',
-      status: 'screen',
       profileId: profileDocs.eagle.id,
       resumeId: resumeDocs[0].id,
       bidderId: bidderKash.id,
-      notes: 'Follow up after fixing job URL',
+      bidderNote: 'Follow up after fixing job URL',
       steps: [{ name: 'screen', status: 'ongoing' }],
-      checkStatus: APPLICATION_CHECK_STATUS.PENDING
+      checkStatus: APPLICATION_CHECK_STATUS.PENDING,
+      checkResult: APPLICATION_CHECK_RESULT.PENDING
     },
     {
       company: 'Scorp',
       roleTitle: 'Frontend Developer',
       jobUrl:
         'http://loka-digital-medya-reklamcilik-ve-teknoloji-anonim-sirketi.breezy.hr/p/c564d0bb97a9-frontend-developer?state=published',
-      status: 'tech',
       profileId: profileDocs.eagle.id,
       resumeId: resumeDocs[0].id,
       bidderId: bidderKash.id,
-      notes: 'Waiting on coding challenge feedback',
+      bidderNote: 'Waiting on coding challenge feedback',
       steps: [
         { name: 'screen', status: 'passed' },
         { name: 'tech', status: 'ongoing' }
       ],
-      checkStatus: APPLICATION_CHECK_STATUS.PENDING
+      checkStatus: APPLICATION_CHECK_STATUS.PENDING,
+      checkResult: APPLICATION_CHECK_RESULT.PENDING
     },
     {
       company: 'MyEdSpace',
       roleTitle: 'Frontend Software Engineer',
       jobUrl: 'https://jobs.ashbyhq.com/myedspacecareers/2a1716b4-0519-49e8-b523-19d2180a98ff/application',
-      status: 'applied',
       profileId: profileDocs.sparrow.id,
       resumeId: resumeDocs[1].id,
       bidderId: bidderSam.id,
-      notes: 'Submitted via LinkedIn',
+      bidderNote: 'Submitted via LinkedIn',
       steps: [{ name: 'applied', status: 'ongoing' }],
-      checkStatus: APPLICATION_CHECK_STATUS.PENDING
+      checkStatus: APPLICATION_CHECK_STATUS.PENDING,
+      checkResult: APPLICATION_CHECK_RESULT.PENDING
     },
     {
       company: 'Acme Corp',
       roleTitle: 'Senior Backend Engineer',
       jobUrl: 'https://jobs.acme',
-      status: 'screen',
       profileId: profileDocs.falcon.id,
       resumeId: resumeDocs[2].id,
       bidderId: bidderSam.id,
-      notes: 'Intro call scheduled',
+      bidderNote: 'Intro call scheduled',
       steps: [{ name: 'screen', status: 'ongoing' }],
-      checkStatus: APPLICATION_CHECK_STATUS.PENDING
+      checkStatus: APPLICATION_CHECK_STATUS.PENDING,
+      checkResult: APPLICATION_CHECK_RESULT.PENDING
     }
   ]
 });

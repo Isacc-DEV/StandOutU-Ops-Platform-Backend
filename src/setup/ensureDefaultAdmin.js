@@ -22,8 +22,8 @@ export const ensureDefaultAdmin = async () => {
         applications: {
           manageAll: true,
           checkAll: false,
-          manageProfiles: [],
-          checkProfiles: []
+          manageApplications: [],
+          checkApplications: []
         },
         profiles: PROFILE_ACCESS.EDIT
       }

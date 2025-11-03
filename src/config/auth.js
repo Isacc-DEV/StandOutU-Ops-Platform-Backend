@@ -7,18 +7,6 @@ export const ROLES = {
   SUPPORT: 'supporter'
 };
 
-export const PIPELINE = [
-  'applied',
-  'screen',
-  'tech',
-  'onsite',
-  'offer',
-  'hired',
-  'rejected',
-  'no_response',
-  'withdrawn'
-];
-
 export const APPLICATION_ACCESS = {
   ALL: 'all',
   ASSIGNED: 'assigned',
@@ -34,8 +22,16 @@ export const PROFILE_ACCESS = {
 export const APPLICATION_CHECK_STATUS = {
   PENDING: 'pending',
   IN_REVIEW: 'in_review',
-  CHECKED: 'checked',
-  REJECTED: 'rejected'
+  REVIEWED: 'reviewed'
 };
 
 export const APPLICATION_CHECK_STATUS_LIST = Object.values(APPLICATION_CHECK_STATUS);
+
+export const APPLICATION_CHECK_RESULT = {
+  PENDING: 'pending',
+  OK: 'ok',
+  BAD: 'bad',
+  NOT_PERFECT: 'not_perfect'
+};
+
+export const APPLICATION_CHECK_RESULT_LIST = Object.values(APPLICATION_CHECK_RESULT);

@@ -28,16 +28,23 @@ const toStringIdArray = value => {
 const pickBoolean = (source, key, fallback = false) =>
   typeof source?.[key] === 'boolean' ? source[key] : fallback;
 
-const ensureLegacyProfiles = value => {
+const ensureManageApplicationList = value => {
   if (!value || typeof value !== 'object') return [];
+  if (Array.isArray(value.manageApplications)) return toStringIdArray(value.manageApplications);
   if (Array.isArray(value.manageProfiles)) return toStringIdArray(value.manageProfiles);
   return toStringIdArray(value.viewProfiles);
 };
 
+const ensureCheckApplicationList = value => {
+  if (!value || typeof value !== 'object') return [];
+  if (Array.isArray(value.checkApplications)) return toStringIdArray(value.checkApplications);
+  return toStringIdArray(value.checkProfiles);
+};
+
 export const defaultApplicationPermissions = () => ({
   manageAll: false,
-  manageProfiles: [],
-  checkProfiles: [],
+  manageApplications: [],
+  checkApplications: [],
   checkAll: false
 });
 
@@ -47,8 +54,8 @@ export const normalizeApplicationPermissions = value => {
     if (value === APPLICATION_ACCESS.ALL) {
       return {
         manageAll: true,
-        manageProfiles: [],
-        checkProfiles: [],
+        manageApplications: [],
+        checkApplications: [],
         checkAll: false
       };
     }
@@ -58,20 +65,20 @@ export const normalizeApplicationPermissions = value => {
     // legacy "assigned" behaviour maps to custom list
     return {
       manageAll: false,
-      manageProfiles: [],
-      checkProfiles: [],
+      manageApplications: [],
+      checkApplications: [],
       checkAll: false
     };
   }
   if (typeof value !== 'object') return defaultApplicationPermissions();
   const manageAll = pickBoolean(value, 'manageAll', pickBoolean(value, 'viewAll', false));
-  const manageProfiles = ensureLegacyProfiles(value);
-  const checkProfiles = toStringIdArray(value.checkProfiles);
+  const manageApplications = ensureManageApplicationList(value);
+  const checkApplications = ensureCheckApplicationList(value);
   const checkAll = pickBoolean(value, 'checkAll', false);
   return {
     manageAll,
-    manageProfiles,
-    checkProfiles,
+    manageApplications,
+    checkApplications,
     checkAll
   };
 };
@@ -84,11 +91,15 @@ export const mergeApplicationPermissions = (current, incoming) => {
     manageAll: pickBoolean(incoming, 'manageAll', base.manageAll),
     checkAll: pickBoolean(incoming, 'checkAll', base.checkAll)
   };
-  if (Array.isArray(incoming.manageProfiles) || Array.isArray(incoming.viewProfiles)) {
-    merged.manageProfiles = ensureLegacyProfiles(incoming);
+  if (
+    Array.isArray(incoming.manageApplications) ||
+    Array.isArray(incoming.manageProfiles) ||
+    Array.isArray(incoming.viewProfiles)
+  ) {
+    merged.manageApplications = ensureManageApplicationList(incoming);
   }
-  if (Array.isArray(incoming.checkProfiles)) {
-    merged.checkProfiles = toStringIdArray(incoming.checkProfiles);
+  if (Array.isArray(incoming.checkApplications) || Array.isArray(incoming.checkProfiles)) {
+    merged.checkApplications = ensureCheckApplicationList(incoming);
   }
   return merged;
 };
