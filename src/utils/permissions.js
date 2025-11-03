@@ -42,10 +42,10 @@ const ensureCheckApplicationList = value => {
 };
 
 export const defaultApplicationPermissions = () => ({
-  manageAll: false,
+  manageAllApplications: false,
   manageApplications: [],
   checkApplications: [],
-  checkAll: false
+  checkAllApplications: false
 });
 
 export const normalizeApplicationPermissions = value => {
@@ -53,10 +53,10 @@ export const normalizeApplicationPermissions = value => {
   if (typeof value === 'string') {
     if (value === APPLICATION_ACCESS.ALL) {
       return {
-        manageAll: true,
+        manageAllApplications: true,
         manageApplications: [],
         checkApplications: [],
-        checkAll: false
+        checkAllApplications: false
       };
     }
     if (value === APPLICATION_ACCESS.NONE) {
@@ -64,22 +64,30 @@ export const normalizeApplicationPermissions = value => {
     }
     // legacy "assigned" behaviour maps to custom list
     return {
-      manageAll: false,
+      manageAllApplications: false,
       manageApplications: [],
       checkApplications: [],
-      checkAll: false
+      checkAllApplications: false
     };
   }
   if (typeof value !== 'object') return defaultApplicationPermissions();
-  const manageAll = pickBoolean(value, 'manageAll', pickBoolean(value, 'viewAll', false));
+  const manageAllApplications = pickBoolean(
+    value,
+    'manageAllApplications',
+    pickBoolean(value, 'manageAll', pickBoolean(value, 'viewAll', false))
+  );
   const manageApplications = ensureManageApplicationList(value);
   const checkApplications = ensureCheckApplicationList(value);
-  const checkAll = pickBoolean(value, 'checkAll', false);
+  const checkAllApplications = pickBoolean(
+    value,
+    'checkAllApplications',
+    pickBoolean(value, 'checkAll', false)
+  );
   return {
-    manageAll,
+    manageAllApplications,
     manageApplications,
     checkApplications,
-    checkAll
+    checkAllApplications
   };
 };
 
@@ -88,8 +96,16 @@ export const mergeApplicationPermissions = (current, incoming) => {
   if (!incoming || typeof incoming !== 'object') return base;
   const merged = {
     ...base,
-    manageAll: pickBoolean(incoming, 'manageAll', base.manageAll),
-    checkAll: pickBoolean(incoming, 'checkAll', base.checkAll)
+    manageAllApplications: pickBoolean(
+      incoming,
+      'manageAllApplications',
+      pickBoolean(incoming, 'manageAll', base.manageAllApplications)
+    ),
+    checkAllApplications: pickBoolean(
+      incoming,
+      'checkAllApplications',
+      pickBoolean(incoming, 'checkAll', base.checkAllApplications)
+    )
   };
   if (
     Array.isArray(incoming.manageApplications) ||

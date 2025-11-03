@@ -20,8 +20,8 @@ export const ensureDefaultAdmin = async () => {
       avatarUrl: '',
       permissions: {
         applications: {
-          manageAll: true,
-          checkAll: false,
+          manageAllApplications: true,
+          checkAllApplications: false,
           manageApplications: [],
           checkApplications: []
         },

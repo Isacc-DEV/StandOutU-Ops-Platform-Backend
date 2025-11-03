@@ -40,8 +40,8 @@ const admin = await prisma.user.create({
     avatarUrl: 'https://i.pravatar.cc/120?img=32',
     permissions: {
         applications: {
-          manageAll: true,
-          checkAll: false,
+          manageAllApplications: true,
+          checkAllApplications: false,
           manageApplications: [],
           checkApplications: []
         },
@@ -60,8 +60,8 @@ const bidderKash = await prisma.user.create({
     avatarUrl: 'https://i.pravatar.cc/120?img=12',
     permissions: {
         applications: {
-          manageAll: false,
-          checkAll: false,
+          manageAllApplications: false,
+          checkAllApplications: false,
           manageApplications: [],
           checkApplications: []
         },
@@ -80,8 +80,8 @@ const bidderSam = await prisma.user.create({
     avatarUrl: 'https://i.pravatar.cc/120?img=18',
     permissions: {
         applications: {
-          manageAll: false,
-          checkAll: false,
+          manageAllApplications: false,
+          checkAllApplications: false,
           manageApplications: [],
           checkApplications: []
         },
@@ -178,8 +178,8 @@ await prisma.user.update({
   data: {
     permissions: {
       applications: {
-        manageAll: false,
-        checkAll: false,
+        manageAllApplications: false,
+        checkAllApplications: false,
         manageApplications: [profileDocs.eagle.id],
         checkApplications: [profileDocs.eagle.id]
       },
@@ -193,8 +193,8 @@ await prisma.user.update({
   data: {
     permissions: {
       applications: {
-        manageAll: false,
-        checkAll: false,
+        manageAllApplications: false,
+        checkAllApplications: false,
         manageApplications: [profileDocs.sparrow.id, profileDocs.falcon.id],
         checkApplications: [profileDocs.sparrow.id]
       },

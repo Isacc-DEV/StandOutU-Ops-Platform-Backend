@@ -53,7 +53,12 @@ const listCheckApplicationIds = perms =>
   perms.checkApplications || perms.checkProfiles || [];
 
 const buildManageProfileSet = (req, perms) => {
-  if (req.user.role === ROLES.ADMIN || perms.manageAll || perms.checkAll) return null;
+  if (
+    req.user.role === ROLES.ADMIN ||
+    perms.manageAllApplications ||
+    perms.checkAllApplications
+  )
+    return null;
   const set = new Set();
   listManageApplicationIds(perms).forEach(id => addIdToSet(set, id));
   listCheckApplicationIds(perms).forEach(id => addIdToSet(set, id));
@@ -62,7 +67,12 @@ const buildManageProfileSet = (req, perms) => {
 };
 
 const buildAccessibleProfileSet = (req, perms) => {
-  if (req.user.role === ROLES.ADMIN || perms.manageAll || perms.checkAll) return null;
+  if (
+    req.user.role === ROLES.ADMIN ||
+    perms.manageAllApplications ||
+    perms.checkAllApplications
+  )
+    return null;
   const set = new Set();
   listManageApplicationIds(perms).forEach(id => addIdToSet(set, id));
   listCheckApplicationIds(perms).forEach(id => addIdToSet(set, id));
@@ -71,7 +81,12 @@ const buildAccessibleProfileSet = (req, perms) => {
 };
 
 const buildCheckProfileSet = (req, perms, manageSet) => {
-  if (req.user.role === ROLES.ADMIN || perms.manageAll || perms.checkAll) return null;
+  if (
+    req.user.role === ROLES.ADMIN ||
+    perms.manageAllApplications ||
+    perms.checkAllApplications
+  )
+    return null;
   const set = new Set();
   listCheckApplicationIds(perms).forEach(id => addIdToSet(set, id));
   if (!set.size) {
@@ -114,7 +129,7 @@ const getBidderIdString = application => {
 
 const canViewApplication = (req, application, perms, accessibleSet) => {
   if (!application) return false;
-  if (req.user.role === ROLES.ADMIN || perms.manageAll) return true;
+  if (req.user.role === ROLES.ADMIN || perms.manageAllApplications) return true;
   const bidderId = getBidderIdString(application);
   if (bidderId && bidderId === req.user.id) return true;
   const profileId = getProfileIdString(application);
@@ -124,7 +139,12 @@ const canViewApplication = (req, application, perms, accessibleSet) => {
 };
 
 const canCheckApplication = (req, application, perms, targetProfileId, checkSet) => {
-  if (req.user.role === ROLES.ADMIN || perms.manageAll || perms.checkAll) return true;
+  if (
+    req.user.role === ROLES.ADMIN ||
+    perms.manageAllApplications ||
+    perms.checkAllApplications
+  )
+    return true;
   const profileId = targetProfileId || getProfileIdString(application);
   if (!profileId) return false;
   const checkable = checkSet ?? buildCheckProfileSet(req, perms, buildManageProfileSet(req, perms));
@@ -222,7 +242,8 @@ export const list = async (req, res) => {
   const perms = applicationPermissionsFor(req);
   const accessibleProfilesSet = buildAccessibleProfileSet(req, perms);
   const isAdmin = req.user.role === ROLES.ADMIN;
-  const hasGlobalAccess = isAdmin || perms.manageAll || accessibleProfilesSet === null;
+  const hasGlobalAccess =
+    isAdmin || perms.manageAllApplications || accessibleProfilesSet === null;
 
   const { page = 1, limit = 20, q } = req.query;
   const numericLimit = Math.max(1, Number(limit) || 20);
@@ -298,7 +319,7 @@ export const list = async (req, res) => {
   }
 
   const biddersRaw =
-    isAdmin || perms.manageAll
+    isAdmin || perms.manageAllApplications
       ? await prisma.user.findMany({
           where: { role: ROLES.BIDDER },
           select: { id: true, name: true }
@@ -334,7 +355,8 @@ export const list = async (req, res) => {
       resumesByProfile: mapResumesByProfile(resumes),
       access: perms,
       capabilities: {
-        canAssignOtherBidders: isAdmin || perms.manageAll || perms.checkAll
+        canAssignOtherBidders:
+          isAdmin || perms.manageAllApplications || perms.checkAllApplications
       }
     }
   });
@@ -360,8 +382,8 @@ export const create = async (req, res) => {
 
   const manageAccess =
     isAdmin ||
-    perms.manageAll ||
-    perms.checkAll ||
+    perms.manageAllApplications ||
+    perms.checkAllApplications ||
     setHas(manageProfiles, payload.profileId);
   if (
     !manageAccess &&
@@ -375,7 +397,8 @@ export const create = async (req, res) => {
     return res.status(403).json({ error: 'Creating applications is not permitted' });
   }
 
-  const canAssignOtherBidders = isAdmin || perms.manageAll || perms.checkAll;
+  const canAssignOtherBidders =
+    isAdmin || perms.manageAllApplications || perms.checkAllApplications;
   if (!canAssignOtherBidders) {
     payload.bidderId = req.user.id;
   } else if (payload.bidderId) {
@@ -427,7 +450,8 @@ export const update = async (req, res) => {
   const manageProfiles = buildManageProfileSet(req, perms);
   const checkableProfiles = buildCheckProfileSet(req, perms, manageProfiles);
   const isAdmin = req.user.role === ROLES.ADMIN;
-  const hasGlobalManage = isAdmin || perms.manageAll || perms.checkAll;
+  const hasGlobalManage =
+    isAdmin || perms.manageAllApplications || perms.checkAllApplications;
 
   const generalUpdates = pickFields(req.body, GENERAL_EDIT_FIELDS);
   const hasGeneralUpdates = Object.keys(generalUpdates).length > 0;

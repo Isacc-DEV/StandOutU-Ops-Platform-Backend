@@ -40,8 +40,8 @@ for (const user of users) {
   const updatedPermissions = {
     profiles: rawPermissions.profiles || PROFILE_ACCESS.VIEW,
     applications: {
-      manageAll: normalizedApps.manageAll,
-      checkAll: normalizedApps.checkAll,
+      manageAllApplications: normalizedApps.manageAllApplications,
+      checkAllApplications: normalizedApps.checkAllApplications,
       manageApplications: toUniqueStrings(normalizedApps.manageApplications),
       checkApplications: toUniqueStrings(normalizedApps.checkApplications)
     }

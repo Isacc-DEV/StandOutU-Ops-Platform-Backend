@@ -53,8 +53,8 @@ const buildPermissionPayload = (current, incoming) => {
   return {
     profiles: merged.profiles,
     applications: {
-      manageAll: merged.applications.manageAll,
-      checkAll: merged.applications.checkAll,
+      manageAllApplications: merged.applications.manageAllApplications,
+      checkAllApplications: merged.applications.checkAllApplications,
       manageApplications: toIdArray(merged.applications.manageApplications),
       checkApplications: toIdArray(merged.applications.checkApplications)
     }
